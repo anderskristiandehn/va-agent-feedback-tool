@@ -41,6 +41,21 @@ def get_feedback():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/env")
+def get_env():
+    import os as _os
+    return {"env": _os.getenv("ENV", "staging")}
+
+
+@app.post("/api/env/{env}")
+def set_env(env: str):
+    if env not in ("staging", "production"):
+        raise HTTPException(status_code=422, detail="env must be 'staging' or 'production'")
+    import os as _os
+    _os.environ["ENV"] = env
+    return {"ok": True, "env": env}
+
+
 @app.post("/api/orgs/refresh")
 def refresh_orgs():
     try:

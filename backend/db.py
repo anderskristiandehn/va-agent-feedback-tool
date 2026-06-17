@@ -14,6 +14,11 @@ import billy_db
 
 load_dotenv()
 
+def _cfg(key: str) -> str:
+    env = os.getenv("ENV", "staging")
+    prefix = "PROD" if env == "production" else "STAGING"
+    return os.getenv(f"{prefix}_{key}", "")
+
 # ---------------------------------------------------------------------------
 # Queries for GET /api/sessions
 # ---------------------------------------------------------------------------
@@ -131,11 +136,11 @@ ORDER BY timestamp DESC NULLS LAST;
 
 def get_connection():
     return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT", "5432"),
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
+        host=_cfg("DB_HOST"),
+        port=_cfg("DB_PORT") or "5432",
+        dbname=_cfg("DB_NAME"),
+        user=_cfg("DB_USER"),
+        password=_cfg("DB_PASSWORD"),
     )
 
 

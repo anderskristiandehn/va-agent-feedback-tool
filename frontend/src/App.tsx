@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { useCallback, useEffect, useRef } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import AllFeedbackTab from './components/AllFeedbackTab'
 import AnnotationsTab from './components/AnnotationsTab'
@@ -34,6 +34,22 @@ const TABS: { id: Tab; label: string; key: string }[] = [
 export default function App() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { selectedSessionId, setSelectedSession, darkMode, toggleDarkMode } = useStore()
+  const queryClient = useQueryClient()
+  const [switching, setSwitching] = useState(false)
+
+  const { data: envData } = useQuery({
+    queryKey: ['env'],
+    queryFn: () => fetch('/api/env').then((r) => r.json()),
+  })
+  const activeEnv: 'staging' | 'production' = envData?.env ?? 'staging'
+
+  const switchEnv = async (env: 'staging' | 'production') => {
+    if (env === activeEnv || switching) return
+    setSwitching(true)
+    await fetch(`/api/env/${env}`, { method: 'POST' })
+    await queryClient.resetQueries()  // clear cache and force all active queries to refetch
+    setSwitching(false)
+  }
   const tabParam = (searchParams.get('tab') as Tab) || 'sessions'
 
   const { data: sessions, isLoading, isError, refetch: refetchSessions, isFetching: isFetchingSessions } = useQuery({
@@ -106,8 +122,28 @@ export default function App() {
           ))}
         </nav>
 
+        {/* Env switcher */}
+        <div className="ml-6 flex items-center gap-1 bg-gray-900 border border-gray-700 rounded px-1 py-0.5">
+          {(['staging', 'production'] as const).map((env) => (
+            <button
+              key={env}
+              onClick={() => switchEnv(env)}
+              disabled={switching}
+              className={`text-[11px] px-2 py-0.5 rounded transition-colors capitalize ${
+                activeEnv === env
+                  ? env === 'production'
+                    ? 'bg-green-700/70 text-green-200 font-medium'
+                    : 'bg-gray-700 text-gray-200 font-medium'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              {env}
+            </button>
+          ))}
+        </div>
+
         {/* Global search */}
-        <div className="ml-6 flex-1 flex justify-end items-center gap-4">
+        <div className="ml-2 flex-1 flex justify-end items-center gap-4">
           <GlobalSearch />
           <button
             onClick={toggleDarkMode}

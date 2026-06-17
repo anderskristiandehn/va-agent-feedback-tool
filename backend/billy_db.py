@@ -5,21 +5,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BILLY_HOST = os.getenv("BILLY_DB_HOST", "mysql-57.db.staging.vpc")
-BILLY_USER = os.getenv("BILLY_DB_USER", "master")
-BILLY_PASSWORD = os.getenv("BILLY_DB_PASSWORD", "***REMOVED***")
-BILLY_PORT = int(os.getenv("BILLY_DB_PORT", "3306"))
+def _cfg(key: str) -> str:
+    env = os.getenv("ENV", "staging")
+    prefix = "PROD" if env == "production" else "STAGING"
+    return os.getenv(f"{prefix}_{key}", "")
 
-# Cache: org_id -> org dict
+# None = not yet loaded. Dict = loaded (may be empty if Billy unreachable).
+# Use a separate flag so we don't confuse "empty result" with "never tried".
 _org_cache: dict[str, dict] | None = None
+_cache_env: str | None = None  # which env the cache was built for
 
 
 def _get_connection():
     return pymysql.connect(
-        host=BILLY_HOST,
-        user=BILLY_USER,
-        password=BILLY_PASSWORD,
-        port=BILLY_PORT,
+        host=_cfg("BILLY_HOST"),
+        user=_cfg("BILLY_USER"),
+        password=_cfg("BILLY_PASSWORD"),
+        port=int(_cfg("BILLY_PORT") or "3306"),
         db="billy",
         cursorclass=pymysql.cursors.DictCursor,
         connect_timeout=5,
@@ -28,11 +30,11 @@ def _get_connection():
     )
 
 
-def load_org_lookup(org_ids: list[str] | None = None) -> dict[str, dict]:
-    """Fetch orgs from Billy for the given org_ids and return a dict keyed by org id."""
-    global _org_cache
+def load_org_lookup(org_ids: list[str]) -> dict[str, dict]:
+    global _org_cache, _cache_env
     if not org_ids:
         _org_cache = {}
+        _cache_env = os.getenv("ENV", "staging")
         return _org_cache
 
     placeholders = ",".join(["%s"] * len(org_ids))
@@ -64,22 +66,28 @@ def load_org_lookup(org_ids: list[str] | None = None) -> dict[str, dict]:
         }
         for row in rows
     }
+    _cache_env = os.getenv("ENV", "staging")
     return _org_cache
 
 
-def get_org_lookup(org_ids: list[str] | None = None) -> dict[str, dict]:
-    global _org_cache
-    if _org_cache is None:
+def get_org_lookup(org_ids: list[str]) -> dict[str, dict]:
+    global _org_cache, _cache_env
+    current_env = os.getenv("ENV", "staging")
+    # Rebuild if never loaded or env switched
+    if _org_cache is None or _cache_env != current_env:
         try:
             load_org_lookup(org_ids)
         except Exception:
             _org_cache = {}
+            _cache_env = current_env
     return _org_cache
 
 
 def get_org(org_id: str) -> dict | None:
-    return get_org_lookup().get(org_id)
+    return (_org_cache or {}).get(org_id)
 
 
 def refresh_cache(org_ids: list[str] | None = None) -> dict[str, dict]:
-    return load_org_lookup(org_ids)
+    global _org_cache
+    _org_cache = None  # force reload
+    return load_org_lookup(org_ids or [])
