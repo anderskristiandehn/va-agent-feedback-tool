@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Billy Invoices</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: #fff;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: #9ca3af;
+      font-size: 0.95rem;
+      margin-bottom: 40px;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      width: 100%;
+      max-width: 1100px;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(10px);
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #c4b5fd;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 1100px;
+      margin-bottom: 28px;
+    }
+    .stat {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 20px 24px;
+      backdrop-filter: blur(10px);
+    }
+    .stat-label { font-size: 0.8rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; }
+    .stat-value.purple { color: #a78bfa; }
+    .stat-value.blue   { color: #60a5fa; }
+    .stat-value.green  { color: #34d399; }
+    canvas { width: 100% !important; }
+  </style>
+</head>
+<body>
+
+  <h1>Invoice Dashboard</h1>
+  <p class="subtitle">Billy.dk · All invoices · DKK</p>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-label">Total Invoices</div>
+      <div class="stat-value purple">26</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Total Gross</div>
+      <div class="stat-value blue">2,699 DKK</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Outstanding</div>
+      <div class="stat-value green">2,094 DKK</div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="card">
+      <h2>Gross Amount by Customer</h2>
+      <canvas id="barChart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Invoice Count by Customer</h2>
+      <canvas id="doughnutChart"></canvas>
+    </div>
+    <div class="card" style="grid-column: span 2;">
+      <h2>Paid vs Unpaid by Customer</h2>
+      <canvas id="stackedBar"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const customers = [
+      "Fest-Best", "switch contact persons", "Company name",
+      "a-new-1", "4444 55555", "abbbb 1", "0 comp",
+      "Individual Fasd", "xyz cop", "Anders Dehn", "ANPARTSSELSKABET A+A+A"
+    ];
+
+    const grossAmounts = [1076.25, 461.25, 307.50, 225.00, 222.50, 153.75, 153.75, 68.75, 28.75, 2.50, 1.25];
+    const counts       = [7, 3, 2, 4, 2, 1, 1, 1, 2, 2, 1];
+    const paid         = [3, 0, 0, 3, 0, 1, 0, 0, 2, 2, 1];
+    const unpaid       = [4, 3, 2, 1, 2, 0, 1, 1, 0, 0, 0];
+
+    const palette = [
+      '#a78bfa','#60a5fa','#34d399','#f472b6','#fbbf24',
+      '#fb923c','#38bdf8','#4ade80','#e879f9','#f87171','#a3e635'
+    ];
+
+    const gridColor = 'rgba(255,255,255,0.06)';
+    const tickColor = '#9ca3af';
+
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: customers,
+        datasets: [{
+          label: 'Gross (DKK)',
+          data: grossAmounts,
+          backgroundColor: palette,
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(2)} DKK` } }
+        },
+        scales: {
+          x: { ticks: { color: tickColor, font: { size: 10 }, maxRotation: 30 }, grid: { color: gridColor } },
+          y: { ticks: { color: tickColor }, grid: { color: gridColor } }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('doughnutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: customers,
+        datasets: [{
+          data: counts,
+          backgroundColor: palette,
+          borderColor: 'transparent',
+          hoverOffset: 12
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: { color: '#d1d5db', font: { size: 10 }, padding: 10, boxWidth: 12 }
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('stackedBar'), {
+      type: 'bar',
+      data: {
+        labels: customers,
+        datasets: [
+          { label: 'Paid',   data: paid,   backgroundColor: '#34d399', borderRadius: 6, borderSkipped: false },
+          { label: 'Unpaid', data: unpaid, backgroundColor: '#f87171', borderRadius: 6, borderSkipped: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#d1d5db', font: { size: 12 }, padding: 16, boxWidth: 14 } }
+        },
+        scales: {
+          x: { stacked: true, ticks: { color: tickColor, font: { size: 10 }, maxRotation: 30 }, grid: { color: gridColor } },
+          y: { stacked: true, ticks: { color: tickColor, stepSize: 1 }, grid: { color: gridColor } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

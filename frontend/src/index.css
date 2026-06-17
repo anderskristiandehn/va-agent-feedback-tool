@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Search highlight — dynamically injected via rehype-raw, not purgeable by Tailwind */
+.search-highlight {
+  background-color: #fef08a;
+  border-radius: 2px;
+  padding: 0 2px;
+  font-style: normal;
+}
+.dark .search-highlight {
+  background-color: #713f12;
+  color: #fef9c3;
+}
+
+/* Markdown prose overrides inside chat bubbles */
+.bubble-prose {
+  @apply prose prose-sm max-w-none dark:prose-invert;
+}
+.bubble-prose p:last-child {
+  @apply mb-0;
+}
+.bubble-prose table {
+  @apply text-xs;
+}
+
+/* Thin scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.gray.600') transparent;
+}
+.dark * {
+  scrollbar-color: theme('colors.gray.600') transparent;
+}
