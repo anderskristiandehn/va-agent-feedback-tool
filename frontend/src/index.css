@@ -16,7 +16,11 @@
 
 /* Markdown prose overrides inside chat bubbles */
 .bubble-prose {
-  @apply prose prose-sm max-w-none dark:prose-invert;
+  @apply prose prose-sm max-w-none;
+}
+/* Agent bubbles use light bg — standard prose. User bubbles are dark bg — invert prose. */
+.bubble-prose-invert {
+  @apply prose prose-sm max-w-none prose-invert;
 }
 .bubble-prose p:last-child {
   @apply mb-0;

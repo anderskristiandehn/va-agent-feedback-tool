@@ -74,6 +74,7 @@ export interface FeedbackEntry {
   timestamp: string | null
   speaker: string | null
   app_name: string | null
+  org_name: string | null
   category: string | null
   details: string | null
   message_preview: string | null

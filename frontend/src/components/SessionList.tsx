@@ -29,7 +29,7 @@ function SessionSkeleton() {
   return (
     <div className="space-y-2 p-2">
       {Array.from({ length: 10 }).map((_, i) => (
-        <div key={i} className="h-24 rounded-lg bg-gray-800 animate-pulse" />
+        <div key={i} className="h-24 rounded-lg bg-gray-200 animate-pulse" />
       ))}
     </div>
   )
@@ -191,7 +191,7 @@ export default function SessionList({
   return (
     <div className="flex flex-col h-full">
       {/* Sticky filters */}
-      <div className="flex-none border-b border-gray-800 bg-gray-950 px-3 py-2 space-y-2">
+      <div className="flex-none border-b border-gray-200 bg-white px-3 py-2 space-y-2">
         {/* Search */}
         <input
           ref={searchRef}
@@ -206,9 +206,9 @@ export default function SessionList({
             }
           }}
           placeholder="Search session ID or user ID… (F)"
-          className="w-full text-xs bg-gray-900 border border-gray-700 rounded px-2.5 py-1.5
-                     text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                     focus:ring-1 focus:ring-indigo-500/50 transition-colors"
+          className="w-full text-xs bg-white border border-gray-300 rounded px-2.5 py-1.5
+                     text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-400
+                     focus:ring-1 focus:ring-indigo-400/30 transition-colors"
         />
 
         {/* Dropdowns row 1 */}
@@ -267,7 +267,10 @@ export default function SessionList({
             onChange={(v) => setFilter('orgFilter', v)}
             options={[
               { value: '', label: 'All organizations' },
-              ...meta.org_names.map((o) => ({ value: o, label: o })),
+              ...meta.org_names.map((o) => {
+                const orgId = sessions.find((s) => s.org_name === o)?.org_id
+                return { value: o, label: orgId ? `${o} (${orgId})` : o }
+              }),
             ]}
             className="flex-1"
           />
@@ -305,24 +308,24 @@ export default function SessionList({
             onChange={(e) => setFilter('dateFrom', e.target.value)}
             onKeyDown={(e) => e.stopPropagation()}
             title="From date"
-            className="flex-1 text-xs bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-300
-                       focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+            className="flex-1 text-xs bg-white border border-gray-300 rounded px-2 py-1.5 text-gray-700
+                       focus:outline-none focus:border-indigo-400 transition-colors cursor-pointer"
           />
-          <span className="text-[11px] text-gray-600 flex-shrink-0">–</span>
+          <span className="text-[11px] text-gray-400 flex-shrink-0">–</span>
           <input
             type="date"
             value={filters.dateTo}
             onChange={(e) => setFilter('dateTo', e.target.value)}
             onKeyDown={(e) => e.stopPropagation()}
             title="To date"
-            className="flex-1 text-xs bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-300
-                       focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+            className="flex-1 text-xs bg-white border border-gray-300 rounded px-2 py-1.5 text-gray-700
+                       focus:outline-none focus:border-indigo-400 transition-colors cursor-pointer"
           />
           <button
             onClick={() => setFilter('sortOrder', filters.sortOrder === 'newest' ? 'oldest' : 'newest')}
             title={filters.sortOrder === 'newest' ? 'Sorted: newest first' : 'Sorted: oldest first'}
-            className="flex-shrink-0 text-[11px] px-2 py-1.5 rounded border border-gray-700 bg-gray-900
-                       text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors whitespace-nowrap"
+            className="flex-shrink-0 text-[11px] px-2 py-1.5 rounded border border-gray-300 bg-white
+                       text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors whitespace-nowrap"
           >
             {filters.sortOrder === 'newest' ? '↓ Newest' : '↑ Oldest'}
           </button>
@@ -335,7 +338,7 @@ export default function SessionList({
               'Loading…'
             ) : (
               <>
-                <span className="text-gray-300">{filteredSessions.length}</span>
+                <span className="text-gray-700 font-medium">{filteredSessions.length}</span>
                 {hasActiveFilters && sessions.length !== filteredSessions.length && (
                   <> / {sessions.length}</>
                 )}{' '}
@@ -350,7 +353,7 @@ export default function SessionList({
                   setRawSearch('')
                   clearFilters()
                 }}
-                className="text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-[11px] text-indigo-600 hover:text-indigo-500 transition-colors"
               >
                 Clear filters
               </button>
@@ -359,8 +362,8 @@ export default function SessionList({
               onClick={() => onRefresh()}
               disabled={isFetching}
               title="Refresh sessions"
-              className={`text-[11px] px-2 py-0.5 rounded border border-gray-700 bg-gray-900
-                         text-gray-400 hover:text-gray-200 hover:border-gray-500 transition-colors
+              className={`text-[11px] px-2 py-0.5 rounded border border-gray-300 bg-white
+                         text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors
                          disabled:opacity-40 disabled:cursor-not-allowed`}
             >
               {isFetching ? '↻ …' : '↻'}
@@ -374,13 +377,13 @@ export default function SessionList({
         {isLoading && <SessionSkeleton />}
 
         {isError && (
-          <div className="p-4 text-center text-red-400 text-sm">
+          <div className="p-4 text-center text-red-500 text-sm">
             Failed to load sessions. Check backend connection.
           </div>
         )}
 
         {!isLoading && !isError && filteredSessions.length === 0 && (
-          <div className="p-4 text-center text-gray-500 text-sm">
+          <div className="p-4 text-center text-gray-400 text-sm">
             {sessions.length === 0 ? 'No sessions found.' : 'No sessions match the current filters.'}
           </div>
         )}
@@ -400,25 +403,30 @@ export default function SessionList({
               onClick={() => onSelect(session.session_id)}
               className={`rounded-lg px-3 py-2.5 cursor-pointer border transition-all select-none ${
                 isSelected
-                  ? 'bg-indigo-950/60 border-indigo-700/70 ring-1 ring-indigo-600/40'
-                  : 'bg-gray-900 border-gray-800 hover:border-gray-600 hover:bg-gray-800/60'
+                  ? 'bg-indigo-50 border-indigo-300 ring-1 ring-indigo-200'
+                  : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
               }`}
             >
-              {/* Top row: ID + annotation indicator */}
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <button
-                  title={isCopied ? 'Copied!' : 'Click to copy full ID'}
-                  onClick={(e) => copyId(e, session.session_id)}
-                  className={`font-mono text-[11px] truncate max-w-[160px] transition-colors ${
-                    isCopied
-                      ? 'text-green-400'
-                      : isSelected
-                      ? 'text-indigo-300 hover:text-indigo-200'
-                      : 'text-gray-400 hover:text-gray-200'
-                  }`}
-                >
-                  {isCopied ? '✓ copied' : session.session_id.slice(0, 20) + '…'}
-                </button>
+              {/* Top row: org name (header) + badges */}
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="min-w-0 flex-1">
+                  <div
+                    title={session.org_id ?? undefined}
+                    className={`text-xs font-semibold truncate ${isSelected ? 'text-indigo-700' : 'text-gray-900'}`}
+                  >
+                    {session.org_name ?? session.session_id.slice(0, 20) + '…'}
+                    {session.org_country && (
+                      <span className="ml-1.5 text-[10px] font-normal text-gray-400">
+                        {session.org_country}
+                      </span>
+                    )}
+                    {session.org_is_trial && (
+                      <span className="ml-1 text-[10px] font-normal text-amber-600 bg-amber-50 border border-amber-200 px-1 py-0.5 rounded">
+                        trial
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   {hasAnnotation && (
                     <span title="Has annotation" className="text-[11px] text-yellow-500">
@@ -426,40 +434,43 @@ export default function SessionList({
                     </span>
                   )}
                   {session.escalation_count > 0 && (
-                    <span className="text-[10px] font-medium bg-amber-900/60 text-amber-300 border border-amber-800/50 px-1.5 py-0.5 rounded-full">
+                    <span title="Escalated to support" className="text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-300 px-1.5 py-0.5 rounded-full">
                       🎧 {session.escalation_count}
                     </span>
                   )}
                   {session.thumbs_down_count > 0 && (
-                    <span className="text-[10px] font-medium bg-red-900/60 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-full">
+                    <span title="Thumbs down feedback" className="text-[10px] font-medium bg-red-100 text-red-600 border border-red-300 px-1.5 py-0.5 rounded-full">
                       👎 {session.thumbs_down_count}
                     </span>
                   )}
                   {session.thumbs_up_count > 0 && (
-                    <span className="text-[10px] font-medium bg-green-900/60 text-green-300 border border-green-800/50 px-1.5 py-0.5 rounded-full">
+                    <span title="Thumbs up feedback" className="text-[10px] font-medium bg-green-100 text-green-600 border border-green-300 px-1.5 py-0.5 rounded-full">
                       👍 {session.thumbs_up_count}
                     </span>
                   )}
                   {session.has_session_feedback && (
-                    <span className="text-[10px] font-medium bg-blue-900/60 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-full">
+                    <span title="Session feedback" className="text-[10px] font-medium bg-blue-100 text-blue-600 border border-blue-300 px-1.5 py-0.5 rounded-full">
                       💬
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Org name */}
-              {session.org_name && (
-                <div className="text-[11px] text-indigo-300/80 font-medium truncate mb-0.5">
-                  {session.org_name}
-                  {session.org_country && <span className="ml-1 text-gray-500 font-normal">· {session.org_country}</span>}
-                  {session.org_is_trial && <span className="ml-1 text-amber-400/80 font-normal">trial</span>}
-                </div>
-              )}
-
-              {/* Date range */}
-              <div className="text-[11px] text-gray-500 mb-1">
-                {formatDateRange(session.first_timestamp, session.last_timestamp)}
+              {/* Session ID row */}
+              <div className="flex items-center gap-1.5 mb-1">
+                <button
+                  title={isCopied ? 'Copied!' : 'Click to copy full session ID'}
+                  onClick={(e) => copyId(e, session.session_id)}
+                  className={`font-mono text-[10px] truncate max-w-[180px] transition-colors ${
+                    isCopied ? 'text-green-600' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  {isCopied ? '✓ copied' : session.session_id.slice(0, 20) + '…'}
+                </button>
+                <span className="text-[10px] text-gray-300">·</span>
+                <span className="text-[10px] text-gray-400">
+                  {formatDateRange(session.first_timestamp, session.last_timestamp)}
+                </span>
               </div>
 
               {/* Triage status summary */}
@@ -480,12 +491,13 @@ export default function SessionList({
                     {entries.map(([status, count]) => (
                       <span
                         key={status}
+                        title={status}
                         className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${
                           status === 'noted'
-                            ? 'bg-blue-900/40 border-blue-700/50 text-blue-300'
+                            ? 'bg-blue-50 border-blue-200 text-blue-600'
                             : status === 'actionable'
-                            ? 'bg-amber-900/40 border-amber-700/50 text-amber-300'
-                            : 'bg-gray-900 border-gray-700 text-gray-500'
+                            ? 'bg-amber-50 border-amber-200 text-amber-600'
+                            : 'bg-gray-100 border-gray-300 text-gray-500'
                         }`}
                       >
                         {status === 'noted' ? '✓' : status === 'actionable' ? '⚡' : '✕'} {count} {status}
@@ -497,13 +509,14 @@ export default function SessionList({
 
               {/* Bottom row */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] text-gray-600 font-mono">
+                <span className="text-[10px] text-gray-400 font-mono">
                   {session.message_count} msg{session.message_count !== 1 ? 's' : ''}
                 </span>
                 {session.speakers.map((sp) => (
                   <span
                     key={sp}
-                    className="text-[10px] bg-gray-800 border border-gray-700 text-gray-400 px-1 py-0.5 rounded font-mono"
+                    title={sp}
+                    className="text-[10px] bg-gray-100 border border-gray-300 text-gray-500 px-1 py-0.5 rounded font-mono"
                   >
                     {sp === 'User' ? 'U' : sp.slice(0, 3).toUpperCase()}
                   </span>
@@ -511,7 +524,7 @@ export default function SessionList({
                 {session.categories.map((cat) => (
                   <span
                     key={cat}
-                    className="text-[10px] bg-orange-900/40 border border-orange-800/50 text-orange-300 px-1.5 py-0.5 rounded"
+                    className="text-[10px] bg-orange-50 border border-orange-200 text-orange-600 px-1.5 py-0.5 rounded"
                   >
                     {cat}
                   </span>
@@ -540,8 +553,8 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`text-xs bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-gray-300
-                  focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer ${className}`}
+      className={`text-xs bg-white border border-gray-300 rounded px-2 py-1.5 text-gray-700
+                  focus:outline-none focus:border-indigo-400 transition-colors cursor-pointer ${className}`}
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>

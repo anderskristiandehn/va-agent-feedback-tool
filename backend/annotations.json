@@ -1,29 +1,18 @@
 {
-  "sessions": {},
-  "messages": {
-    "d8858fee-cf3c-4522-a378-1f7487dc1f77:bLvE6Sec": {
-      "text": "Priority ",
-      "updated_at": "2026-05-18T21:16:48.820532+00:00"
+  "production": {
+    "sessions": {
+      "c078236d-f633-4a64-a45c-95b388e3d061": {
+        "text": "test",
+        "status": "actionable",
+        "updated_at": "2026-07-08T10:18:44.788757+00:00"
+      }
     },
-    "583f55da-1035-401f-986b-92d2adc89f04:rTo8mfDX": {
-      "text": "",
-      "status": "noted",
-      "updated_at": "2026-05-19T10:55:09.720797+00:00"
-    },
-    "d8858fee-cf3c-4522-a378-1f7487dc1f77:BdbfZtKH": {
-      "text": "",
-      "status": "actionable",
-      "updated_at": "2026-05-19T10:55:24.029616+00:00"
-    },
-    "d8858fee-cf3c-4522-a378-1f7487dc1f77:RbWtQmZ2": {
-      "text": "",
-      "status": "noted",
-      "updated_at": "2026-05-19T10:55:31.057207+00:00"
-    },
-    "d8858fee-cf3c-4522-a378-1f7487dc1f77:vfRg2f0h": {
-      "text": "Test",
-      "status": "unreviewed",
-      "updated_at": "2026-05-19T13:06:11.578322+00:00"
+    "messages": {
+      "142de2ab-aa01-4165-bd98-6317dca7587c:cyu6hGc0": {
+        "text": "test on chat",
+        "status": "noted",
+        "updated_at": "2026-07-08T10:19:11.775479+00:00"
+      }
     }
   }
 }

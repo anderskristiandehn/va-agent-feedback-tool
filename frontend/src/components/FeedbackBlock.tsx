@@ -25,10 +25,10 @@ export default function FeedbackBlock({
 
   return (
     <div
-      className={`mx-3 mb-3 mt-1 rounded-lg border px-3 py-2 text-sm ${
+      className={`mx-3 mb-3 mt-1 rounded-lg border px-3 py-2.5 text-sm ${
         isDown
-          ? 'bg-red-950/40 border-red-800/50 text-red-200'
-          : 'bg-green-950/40 border-green-800/50 text-green-200'
+          ? 'bg-red-50 border-red-200 text-red-800'
+          : 'bg-green-50 border-green-200 text-green-800'
       }`}
     >
       <div className="flex items-start gap-2 flex-wrap">
@@ -38,8 +38,8 @@ export default function FeedbackBlock({
           <span
             className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium font-mono ${
               isDown
-                ? 'bg-red-900/60 text-red-300 border border-red-700/50'
-                : 'bg-green-900/60 text-green-300 border border-green-700/50'
+                ? 'bg-red-100 text-red-700 border border-red-200'
+                : 'bg-green-100 text-green-700 border border-green-200'
             }`}
           >
             {feedbackCategory}
@@ -47,7 +47,7 @@ export default function FeedbackBlock({
         )}
 
         {feedbackComment && (
-          <span className="text-xs leading-relaxed text-gray-300 flex-1">
+          <span className="text-xs leading-relaxed text-gray-700 flex-1">
             {feedbackComment}
           </span>
         )}

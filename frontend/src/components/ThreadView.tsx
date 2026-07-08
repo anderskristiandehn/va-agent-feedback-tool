@@ -191,10 +191,10 @@ export default function ThreadView({ session, annotations }: Props) {
 
   if (!session) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-gray-600">
+      <div className="h-full flex flex-col items-center justify-center bg-gray-50">
         <div className="text-4xl mb-3">💬</div>
         <div className="text-base text-gray-500">Select a session to view the thread</div>
-        <div className="text-xs mt-1 text-gray-600">Use J / K to navigate, F to search</div>
+        <div className="text-xs mt-1 text-gray-400">Use J / K to navigate, F to search</div>
       </div>
     )
   }
@@ -204,30 +204,30 @@ export default function ThreadView({ session, annotations }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex-none border-b border-gray-800 bg-gray-950 px-4 py-3 space-y-2">
+      <div className="flex-none border-b border-gray-200 bg-white px-4 py-3 space-y-2">
         {/* Top row */}
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-0.5 min-w-0">
             <button
               onClick={copySessionId}
               title={copiedId ? 'Copied!' : 'Click to copy session ID'}
-              className="font-mono text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="font-mono text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
             >
               {copiedId ? '✓ copied' : session.session_id}
             </button>
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="font-mono text-[11px] text-gray-500">{session.user_id}</span>
-              <span className="text-[11px] bg-gray-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded font-mono">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-[11px] text-gray-400">{session.user_id}</span>
+              <span className="text-[11px] bg-gray-100 border border-gray-300 text-gray-600 px-1.5 py-0.5 rounded font-mono">
                 {session.app_name}
               </span>
               {session.org_name && (
-                <span className="text-[11px] text-indigo-300/90 font-medium">{session.org_name}</span>
+                <span className="text-[11px] text-indigo-600 font-semibold">{session.org_name}</span>
               )}
               {session.org_country && (
                 <span className="text-[11px] text-gray-500">{session.org_country}</span>
               )}
               {session.org_plan && (
-                <span className="text-[11px] bg-gray-800 border border-gray-700 text-gray-400 px-1.5 py-0.5 rounded">
+                <span className="text-[11px] bg-gray-100 border border-gray-300 text-gray-600 px-1.5 py-0.5 rounded">
                   {session.org_plan}{session.org_is_trial ? ' · trial' : ''}
                 </span>
               )}
@@ -240,17 +240,17 @@ export default function ThreadView({ session, annotations }: Props) {
 
         {/* Session feedback banner */}
         {session.session_feedback && (
-          <div className="bg-indigo-950/50 border border-indigo-800/50 rounded-lg px-3 py-2 text-sm">
+          <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 text-sm">
             <div className="flex items-start gap-2">
-              <span className="text-indigo-400 font-medium text-xs mt-0.5">💬 Session feedback</span>
+              <span className="text-indigo-600 font-medium text-xs mt-0.5">💬 Session feedback</span>
               {session.session_feedback.category && (
-                <span className="text-[10px] bg-indigo-900/60 border border-indigo-700/50 text-indigo-300 px-1.5 py-0.5 rounded font-mono">
+                <span className="text-[10px] bg-indigo-100 border border-indigo-200 text-indigo-600 px-1.5 py-0.5 rounded font-mono">
                   {session.session_feedback.category}
                 </span>
               )}
             </div>
             {session.session_feedback.details && (
-              <p className="mt-1 text-xs text-indigo-200/80">{session.session_feedback.details}</p>
+              <p className="mt-1 text-xs text-indigo-700">{session.session_feedback.details}</p>
             )}
             <TriageStatusSelector
               status={session.session_feedback.status}
@@ -262,23 +262,26 @@ export default function ThreadView({ session, annotations }: Props) {
 
         {/* Session annotation */}
         <div className="flex gap-2 items-end">
-          <textarea
-            value={sessionAnnotationText}
-            onChange={(e) => setSessionAnnotationText(e.target.value)}
-            onKeyDown={(e) => e.stopPropagation()}
-            placeholder="Session annotation…"
-            rows={2}
-            className="flex-1 text-xs bg-gray-900 border border-gray-700 rounded px-2.5 py-1.5 resize-none
-                       text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                       focus:ring-1 focus:ring-indigo-500/50 transition-colors"
-          />
+          <div className="flex-1 relative">
+            <label className="block text-[10px] text-gray-400 font-medium mb-1 uppercase tracking-wide">Internal note</label>
+            <textarea
+              value={sessionAnnotationText}
+              onChange={(e) => setSessionAnnotationText(e.target.value)}
+              onKeyDown={(e) => e.stopPropagation()}
+              placeholder="Add a note about this session…"
+              rows={2}
+              className="w-full text-xs bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1.5 resize-none
+                         text-gray-800 placeholder-gray-400 focus:outline-none focus:border-indigo-400
+                         focus:ring-1 focus:ring-indigo-400/30 transition-colors"
+            />
+          </div>
           <button
             onClick={saveSessionAnnotation}
             disabled={!annotationDirty || savingAnnotation}
-            className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors mb-0.5 ${
               annotationDirty
-                ? 'bg-indigo-700 border-indigo-600 text-white hover:bg-indigo-600'
-                : 'bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed'
+                ? 'bg-indigo-600 border-indigo-500 text-white hover:bg-indigo-500'
+                : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed'
             }`}
           >
             {savingAnnotation ? '…' : 'Save'}
@@ -293,8 +296,8 @@ export default function ThreadView({ session, annotations }: Props) {
               <button
                 onClick={() => goFeedback(-1)}
                 disabled={feedbackIndices.length > 1 && currentFeedbackIdx === 0}
-                className="text-[11px] px-2 py-0.5 rounded bg-gray-800 border border-gray-700
-                           text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="text-[11px] px-2 py-0.5 rounded-md bg-white border border-gray-300
+                           text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 ← Prev
               </button>
@@ -304,8 +307,8 @@ export default function ThreadView({ session, annotations }: Props) {
               <button
                 onClick={() => goFeedback(1)}
                 disabled={feedbackIndices.length > 1 && currentFeedbackIdx === feedbackIndices.length - 1}
-                className="text-[11px] px-2 py-0.5 rounded bg-gray-800 border border-gray-700
-                           text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="text-[11px] px-2 py-0.5 rounded-md bg-white border border-gray-300
+                           text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Next →
               </button>
@@ -333,9 +336,9 @@ export default function ThreadView({ session, annotations }: Props) {
                 }
               }}
               placeholder="Search in thread… (/)"
-              className="flex-1 min-w-0 text-xs bg-gray-900 border border-gray-700 rounded px-2.5 py-1
-                         text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                         focus:ring-1 focus:ring-indigo-500/50 transition-colors"
+              className="flex-1 min-w-0 text-xs bg-white border border-gray-300 rounded px-2.5 py-1
+                         text-gray-800 placeholder-gray-400 focus:outline-none focus:border-indigo-400
+                         focus:ring-1 focus:ring-indigo-400/30 transition-colors"
             />
             {matchingIndices.length > 0 && (
               <>
@@ -344,29 +347,29 @@ export default function ThreadView({ session, annotations }: Props) {
                 </span>
                 <button
                   onClick={() => goMatch(-1)}
-                  className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700"
+                  className="text-[10px] px-1.5 py-0.5 rounded bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
                   ↑
                 </button>
                 <button
                   onClick={() => goMatch(1)}
-                  className="text-[10px] px-1.5 py-0.5 rounded bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700"
+                  className="text-[10px] px-1.5 py-0.5 rounded bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
                   ↓
                 </button>
               </>
             )}
             {rawSearch && matchingIndices.length === 0 && (
-              <span className="text-[11px] text-red-400 whitespace-nowrap">No matches</span>
+              <span className="text-[11px] text-red-500 whitespace-nowrap">No matches</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Message list */}
-      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto py-4 space-y-0">
+      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto py-4 space-y-0 bg-gray-50">
         {messages.length === 0 && (
-          <div className="text-center text-gray-600 text-sm py-8">No messages in this session.</div>
+          <div className="text-center text-gray-400 text-sm py-8">No messages in this session.</div>
         )}
 
         {messages.map((msg, idx) => {

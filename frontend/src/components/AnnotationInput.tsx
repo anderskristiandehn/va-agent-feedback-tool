@@ -50,9 +50,9 @@ export default function AnnotationInput({ sessionId, eventId, initialValue }: Pr
         if (e.key === 'Enter') e.currentTarget.blur()
         e.stopPropagation() // prevent global keyboard shortcuts from firing
       }}
-      className="mt-2 w-full text-xs bg-black/20 border border-white/10 rounded px-2 py-1
-                 text-gray-300 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                 focus:ring-1 focus:ring-indigo-500/50 transition-colors"
+      className="mt-2 w-full text-xs bg-gray-50 border border-gray-200 rounded px-2 py-1
+                 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-indigo-500
+                 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
     />
   )
 }

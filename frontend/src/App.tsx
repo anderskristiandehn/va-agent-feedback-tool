@@ -99,10 +99,10 @@ export default function App() {
   const selectedSession = sessions?.find((s) => s.session_id === selectedSessionId) ?? null
 
   return (
-    <div className="h-screen flex flex-col bg-gray-950 text-gray-100">
+    <div className="h-screen flex flex-col bg-gray-50 text-gray-900">
       {/* Top nav */}
-      <header className="flex-none flex items-center gap-0 border-b border-gray-800 px-4 h-12">
-        <span className="text-sm font-semibold text-indigo-400 mr-6 tracking-wide flex-none">
+      <header className="flex-none flex items-center gap-0 border-b border-gray-200 bg-white px-4 h-12 shadow-sm">
+        <span className="text-sm font-semibold text-indigo-600 mr-6 tracking-wide flex-none">
           Feedback Review
         </span>
         <nav className="flex h-full">
@@ -113,8 +113,8 @@ export default function App() {
               title={`Switch to ${tab.label} (${tab.key})`}
               className={`px-4 h-full text-sm border-b-2 transition-colors ${
                 tabParam === tab.id
-                  ? 'border-indigo-500 text-gray-100'
-                  : 'border-transparent text-gray-400 hover:text-gray-200'
+                  ? 'border-indigo-500 text-gray-900 font-medium'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               {tab.label}
@@ -123,18 +123,18 @@ export default function App() {
         </nav>
 
         {/* Env switcher */}
-        <div className="ml-6 flex items-center gap-1 bg-gray-900 border border-gray-700 rounded px-1 py-0.5">
+        <div className="ml-6 flex items-center gap-0.5 bg-gray-100 border border-gray-300 rounded-full px-1 py-0.5">
           {(['staging', 'production'] as const).map((env) => (
             <button
               key={env}
               onClick={() => switchEnv(env)}
               disabled={switching}
-              className={`text-[11px] px-2 py-0.5 rounded transition-colors capitalize ${
+              className={`text-[11px] px-2.5 py-0.5 rounded-full transition-colors capitalize ${
                 activeEnv === env
                   ? env === 'production'
-                    ? 'bg-green-700/70 text-green-200 font-medium'
-                    : 'bg-gray-700 text-gray-200 font-medium'
-                  : 'text-gray-500 hover:text-gray-300'
+                    ? 'bg-green-600 text-white font-medium shadow-sm'
+                    : 'bg-white text-gray-700 font-medium shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               {env}
@@ -148,7 +148,7 @@ export default function App() {
           <button
             onClick={toggleDarkMode}
             title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="text-gray-400 hover:text-gray-200 px-2 py-1 rounded text-sm transition-colors flex-none"
+            className="text-gray-400 hover:text-gray-600 px-2 py-1 rounded text-sm transition-colors flex-none"
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -159,7 +159,7 @@ export default function App() {
       <main className="flex-1 min-h-0">
         {tabParam === 'sessions' && (
           <div className="flex h-full">
-            <div className="w-[35%] min-w-[280px] max-w-[480px] flex-none border-r border-gray-800 flex flex-col">
+            <div className="w-[35%] min-w-[280px] max-w-[480px] flex-none border-r border-gray-200 flex flex-col bg-white">
               <SessionList
                 sessions={sessions ?? []}
                 annotations={annotations ?? { sessions: {}, messages: {} }}
@@ -181,9 +181,18 @@ export default function App() {
           </div>
         )}
 
-        {tabParam === 'feedback' && <AllFeedbackTab />}
+        {tabParam === 'feedback' && (
+          <AllFeedbackTab
+            annotations={annotations ?? { sessions: {}, messages: {} }}
+          />
+        )}
 
-        {tabParam === 'annotations' && <AnnotationsTab />}
+        {tabParam === 'annotations' && (
+          <AnnotationsTab
+            sessions={sessions ?? []}
+            annotations={annotations ?? { sessions: {}, messages: {} }}
+          />
+        )}
 
         {tabParam === 'orgs' && <OrgsTab />}
       </main>

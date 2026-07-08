@@ -157,14 +157,14 @@ export default function GlobalSearch() {
             }
           }}
           placeholder="Search all sessions…"
-          className="w-48 lg:w-64 pl-7 pr-3 py-1 text-xs bg-gray-900 border border-gray-700 rounded
-                     text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                     focus:ring-1 focus:ring-indigo-500/50 transition-all focus:w-64 lg:focus:w-80"
+          className="w-48 lg:w-64 pl-7 pr-3 py-1 text-xs bg-white border border-gray-300 rounded
+                     text-gray-800 placeholder-gray-400 focus:outline-none focus:border-indigo-400
+                     focus:ring-1 focus:ring-indigo-400/30 transition-all focus:w-64 lg:focus:w-80"
         />
       </div>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 w-[480px] bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-1.5 w-[480px] bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
           {results.length === 0 ? (
             <div className="px-4 py-3 text-xs text-gray-500">
               {debouncedSearch.length < 2
@@ -172,15 +172,15 @@ export default function GlobalSearch() {
                 : `No results for "${debouncedSearch}"`}
             </div>
           ) : (
-            <div className="max-h-[480px] overflow-y-auto divide-y divide-gray-800">
+            <div className="max-h-[480px] overflow-y-auto divide-y divide-gray-100">
               {results.map(({ session, matches }) => (
                 <div key={session.session_id} className="px-3 py-2">
                   {/* Session header */}
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-mono text-[10px] text-indigo-400">
+                    <span className="font-mono text-[10px] text-indigo-600">
                       {session.session_id.slice(0, 16)}…
                     </span>
-                    <span className="text-[10px] text-gray-600">
+                    <span className="text-[10px] text-gray-400">
                       {formatSessionRange(session.first_timestamp, session.last_timestamp)}
                     </span>
                   </div>
@@ -191,20 +191,20 @@ export default function GlobalSearch() {
                         key={`${match.field}-${mi}`}
                         onClick={() => navigate(session.session_id, match.eventId, debouncedSearch)}
                         className="w-full text-left flex items-start gap-2 px-2 py-1.5 rounded-lg
-                                   hover:bg-gray-800 transition-colors group"
+                                   hover:bg-gray-50 transition-colors group"
                       >
                         <span
                           className={`flex-none mt-0.5 text-[9px] font-mono px-1.5 py-0.5 rounded uppercase tracking-wide ${
                             match.field === 'message'
-                              ? 'bg-blue-900/60 text-blue-300'
+                              ? 'bg-blue-50 text-blue-600'
                               : match.field === 'feedback'
-                              ? 'bg-red-900/60 text-red-300'
-                              : 'bg-yellow-900/60 text-yellow-300'
+                              ? 'bg-red-50 text-red-600'
+                              : 'bg-yellow-50 text-yellow-700'
                           }`}
                         >
                           {FIELD_LABELS[match.field]}
                         </span>
-                        <span className="text-xs text-gray-400 group-hover:text-gray-200 transition-colors truncate">
+                        <span className="text-xs text-gray-500 group-hover:text-gray-800 transition-colors truncate">
                           {match.snippet}
                         </span>
                       </button>
@@ -214,7 +214,7 @@ export default function GlobalSearch() {
               ))}
             </div>
           )}
-          <div className="border-t border-gray-800 px-3 py-1.5 text-[10px] text-gray-600">
+          <div className="border-t border-gray-100 px-3 py-1.5 text-[10px] text-gray-400">
             {results.length} session{results.length !== 1 ? 's' : ''} · Click to open thread · Esc to close
           </div>
         </div>

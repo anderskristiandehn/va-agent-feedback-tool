@@ -18,6 +18,7 @@ type SortCol =
 type SortDir = 'asc' | 'desc'
 
 interface OrgRow {
+  org_id: string | null
   org_name: string
   org_country: string | null
   org_plan: string | null
@@ -50,7 +51,7 @@ function SortTh({
     <th className={`px-3 py-2 text-left text-[11px] font-medium text-gray-500 select-none ${className}`}>
       <button
         onClick={() => setSort({ col, dir: active && sort.dir === 'desc' ? 'asc' : 'desc' })}
-        className="flex items-center gap-1 hover:text-gray-300 transition-colors"
+        className="flex items-center gap-1 hover:text-gray-700 transition-colors"
       >
         {label}
         <span className="text-[10px]">{active ? (sort.dir === 'desc' ? '↓' : '↑') : '↕'}</span>
@@ -76,6 +77,7 @@ export default function OrgsTab() {
       const name = s.org_name ?? '(unknown)'
       if (!map.has(name)) {
         map.set(name, {
+          org_id: s.org_id,
           org_name: name,
           org_country: s.org_country,
           org_plan: s.org_plan,
@@ -139,20 +141,20 @@ export default function OrgsTab() {
   return (
     <div className="h-full flex flex-col">
       {/* Header bar */}
-      <div className="flex-none border-b border-gray-800 bg-gray-950 px-4 py-2.5 flex items-center gap-3">
+      <div className="flex-none border-b border-gray-200 bg-white px-4 py-2.5 flex items-center gap-3">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => { e.stopPropagation(); if (e.key === 'Escape') setSearch('') }}
           placeholder="Search organizations…"
-          className="text-xs bg-gray-900 border border-gray-700 rounded px-2.5 py-1.5 w-56
-                     text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                     focus:ring-1 focus:ring-indigo-500/50 transition-colors"
+          className="text-xs bg-white border border-gray-300 rounded px-2.5 py-1.5 w-56
+                     text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-400
+                     focus:ring-1 focus:ring-indigo-400/30 transition-colors"
         />
         <span className="text-[11px] text-gray-500">
           {isLoading ? 'Loading…' : (
-            <><span className="text-gray-300">{sorted.length}</span> organizations</>
+            <><span className="text-gray-700 font-medium">{sorted.length}</span> organizations</>
           )}
         </span>
       </div>
@@ -160,14 +162,15 @@ export default function OrgsTab() {
       {/* Table */}
       <div className="flex-1 overflow-auto">
         {!isLoading && sorted.length === 0 && (
-          <div className="p-8 text-center text-gray-600 text-sm">No organizations found.</div>
+          <div className="p-8 text-center text-gray-400 text-sm">No organizations found.</div>
         )}
 
         {(isLoading || sorted.length > 0) && (
           <table className="w-full text-xs border-collapse">
-            <thead className="sticky top-0 bg-gray-950 border-b border-gray-800 z-10">
+            <thead className="sticky top-0 bg-gray-50 border-b border-gray-200 z-10">
               <tr>
                 <SortTh col="org_name" label="Organization" sort={sort} setSort={setSort} className="w-48" />
+                <th className="px-3 py-2 text-left text-[11px] font-medium text-gray-500 w-32">Org ID</th>
                 <th className="px-3 py-2 text-left text-[11px] font-medium text-gray-500 w-12">Country</th>
                 <th className="px-3 py-2 text-left text-[11px] font-medium text-gray-500 w-24">Plan</th>
                 <th className="px-3 py-2 text-left text-[11px] font-medium text-gray-500 w-28">Created</th>
@@ -179,63 +182,64 @@ export default function OrgsTab() {
                 <SortTh col="comments" label="Comments" sort={sort} setSort={setSort} className="w-24" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/60">
+            <tbody className="divide-y divide-gray-100">
               {isLoading
                 ? Array.from({ length: 8 }).map((_, i) => (
                     <tr key={i}>
                       {Array.from({ length: 10 }).map((__, j) => (
                         <td key={j} className="px-3 py-2.5">
-                          <div className="h-3 bg-gray-800 animate-pulse rounded w-full" />
+                          <div className="h-3 bg-gray-200 animate-pulse rounded w-full" />
                         </td>
                       ))}
                     </tr>
                   ))
                 : sorted.map((org) => (
-                    <tr key={org.org_name} className="hover:bg-gray-900/40 transition-colors">
+                    <tr key={org.org_name} className="hover:bg-gray-50 transition-colors">
                       <td className="px-3 py-2.5">
                         <button
                           onClick={() => goToSessions(org.org_name)}
                           disabled={org.org_name === '(unknown)'}
-                          className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium text-left disabled:text-gray-500 disabled:cursor-default"
+                          className="text-indigo-600 hover:text-indigo-500 transition-colors font-medium text-left disabled:text-gray-400 disabled:cursor-default"
                         >
                           {org.org_name}
                         </button>
                       </td>
-                      <td className="px-3 py-2.5 text-gray-400">{org.org_country ?? '—'}</td>
+                      <td className="px-3 py-2.5 font-mono text-[11px] text-gray-400 select-all">{org.org_id ?? '—'}</td>
+                      <td className="px-3 py-2.5 text-gray-500">{org.org_country ?? '—'}</td>
                       <td className="px-3 py-2.5">
                         {org.org_plan ? (
                           <span className="flex items-center gap-1">
-                            <span className="text-gray-400">{org.org_plan}</span>
+                            <span className="text-gray-600">{org.org_plan}</span>
                             {org.org_is_trial && (
-                              <span className="text-[10px] text-amber-400 border border-amber-800/50 bg-amber-900/30 px-1 py-0.5 rounded">trial</span>
+                              <span className="text-[10px] text-amber-600 border border-amber-200 bg-amber-50 px-1 py-0.5 rounded">trial</span>
                             )}
                           </span>
-                        ) : <span className="text-gray-700">—</span>}
+                        ) : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-3 py-2.5 text-gray-500 font-mono text-[11px]">{formatDate(org.org_created)}</td>
                       <td className="px-3 py-2.5">
-                        <span className="text-gray-200 font-medium">{org.sessions}</span>
+                        <span className="text-gray-800 font-medium">{org.sessions}</span>
                       </td>
-                      <td className="px-3 py-2.5 text-gray-400">{org.avg_msgs}</td>
+                      <td className="px-3 py-2.5 text-gray-500">{org.avg_msgs}</td>
                       <td className="px-3 py-2.5">
                         {org.thumbs_up > 0
-                          ? <span className="text-green-400 font-medium">{org.thumbs_up}</span>
-                          : <span className="text-gray-700">—</span>}
+                          ? <span className="text-green-600 font-medium">{org.thumbs_up}</span>
+                          : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-3 py-2.5">
                         {org.thumbs_down > 0
-                          ? <span className="text-red-400 font-medium">{org.thumbs_down}</span>
-                          : <span className="text-gray-700">—</span>}
+                          ? <span className="text-red-600 font-medium">{org.thumbs_down}</span>
+                          : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-3 py-2.5">
                         {org.escalations > 0
-                          ? <span className="text-amber-400 font-medium">{org.escalations}</span>
-                          : <span className="text-gray-700">—</span>}
+                          ? <span className="text-amber-600 font-medium">{org.escalations}</span>
+                          : <span className="text-gray-300">—</span>}
                       </td>
                       <td className="px-3 py-2.5">
                         {org.comments > 0
-                          ? <span className="text-blue-400 font-medium">{org.comments}</span>
-                          : <span className="text-gray-700">—</span>}
+                          ? <span className="text-blue-600 font-medium">{org.comments}</span>
+                          : <span className="text-gray-300">—</span>}
                       </td>
                     </tr>
                   ))}

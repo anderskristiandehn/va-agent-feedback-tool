@@ -492,8 +492,28 @@ def fetch_feedback() -> list[dict]:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(FEEDBACK_QUERY)
             rows = [dict(r) for r in cur.fetchall()]
+
+            # Get user_ids for all session_ids so we can enrich with org data
+            session_ids = list({r["session_id"] for r in rows if r.get("session_id")})
+            user_id_map: dict[str, str] = {}
+            if session_ids:
+                placeholders = ",".join(["%s"] * len(session_ids))
+                cur.execute(
+                    f"SELECT DISTINCT session_id, user_id FROM public.events "
+                    f"WHERE session_id IN ({placeholders}) AND user_id IS NOT NULL",
+                    session_ids,
+                )
+                for r in cur.fetchall():
+                    user_id_map[r["session_id"]] = r["user_id"]
     finally:
         conn.close()
+
+    org_lookup = {}
+    if user_id_map:
+        try:
+            org_lookup = billy_db.get_org_lookup(list(user_id_map.values()))
+        except Exception:
+            pass
 
     return [
         {
@@ -504,6 +524,7 @@ def fetch_feedback() -> list[dict]:
             "timestamp": _ts(row["timestamp"]),
             "speaker": row["speaker"],
             "app_name": row["app_name"],
+            "org_name": org_lookup.get(user_id_map.get(row["session_id"], ""), {}).get("org_name"),
             "category": row["category"],
             "details": row["details"],
             "message_preview": row["message_preview"],

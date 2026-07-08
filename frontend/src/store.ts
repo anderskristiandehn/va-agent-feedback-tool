@@ -56,7 +56,7 @@ interface AppState {
 
 const getInitialDarkMode = (): boolean => {
   const stored = localStorage.getItem('darkMode')
-  return stored !== 'false'
+  return stored === 'true'
 }
 
 export const useStore = create<AppState>((set) => ({

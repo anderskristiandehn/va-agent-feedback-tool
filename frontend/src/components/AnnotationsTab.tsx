@@ -1,15 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useDebounce } from '../hooks/useDebounce'
 import { useStore } from '../store'
 import type { Annotations, SessionData, TriageStatus } from '../types'
 import MultiSelect from './MultiSelect'
-
-const fetchSessions = (): Promise<SessionData[]> =>
-  fetch('/api/sessions').then((r) => r.json())
-const fetchAnnotations = (): Promise<Annotations> =>
-  fetch('/api/annotations').then((r) => r.json())
 
 function formatTs(ts: string): string {
   return new Date(ts).toLocaleString('en-GB', {
@@ -31,22 +25,23 @@ function formatDateRange(first: string | null, last: string | null): string {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="py-8 text-center text-gray-600 text-sm">
+    <div className="py-8 text-center text-gray-400 text-sm">
       <div className="text-2xl mb-2">📭</div>
       {message}
     </div>
   )
 }
 
-export default function AnnotationsTab() {
+interface Props {
+  sessions: SessionData[]
+  annotations: Annotations
+}
+
+export default function AnnotationsTab({ sessions: allSessions, annotations }: Props) {
   const [, setSearchParams] = useSearchParams()
   const { setSelectedSession } = useStore()
 
-  const { data: sessions } = useQuery({ queryKey: ['sessions'], queryFn: fetchSessions })
-  const { data: annotations } = useQuery({ queryKey: ['annotations'], queryFn: fetchAnnotations })
-
-  const ann = annotations ?? { sessions: {}, messages: {} }
-  const allSessions = sessions ?? []
+  const ann = annotations
 
   const [s1Search, setS1Search] = useState('')
   const [s2Search, setS2Search] = useState('')
@@ -118,9 +113,9 @@ export default function AnnotationsTab() {
         {/* Section 1 — Session annotations */}
         <section>
           <div className="flex items-center justify-between mb-3 gap-4 flex-wrap">
-            <h2 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               Session annotations
-              <span className="text-[11px] font-normal text-gray-600 bg-gray-800 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                 {sessionAnnotations.length}
               </span>
             </h2>
@@ -145,9 +140,9 @@ export default function AnnotationsTab() {
                   if (e.key === 'Escape') setS1Search('')
                 }}
                 placeholder="Filter session annotations…"
-                className="text-xs bg-gray-900 border border-gray-700 rounded px-2.5 py-1.5 w-56
-                           text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                           focus:ring-1 focus:ring-indigo-500/50 transition-colors"
+                className="text-xs bg-white border border-gray-300 rounded px-2.5 py-1.5 w-56
+                           text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-400
+                           focus:ring-1 focus:ring-indigo-400/30 transition-colors"
               />
             </div>
           </div>
@@ -157,9 +152,9 @@ export default function AnnotationsTab() {
           ) : filteredS1.length === 0 ? (
             <EmptyState message="No annotations match the search." />
           ) : (
-            <div className="border border-gray-800 rounded-xl overflow-hidden">
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
               <table className="w-full text-xs border-collapse">
-                <thead className="bg-gray-900/60 border-b border-gray-800">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-500 w-48">Session</th>
                     <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-500 w-36">Organization</th>
@@ -169,22 +164,26 @@ export default function AnnotationsTab() {
                     <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-500 w-36">Last updated</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800/60">
+                <tbody className="divide-y divide-gray-100">
                   {filteredS1.map(({ sessionId, annotation, session }) => (
-                    <tr key={sessionId} className="hover:bg-gray-900/40 transition-colors">
+                    <tr key={sessionId} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
                         <button
                           onClick={() => goToSession(sessionId)}
                           title={sessionId}
-                          className="font-mono text-indigo-400 hover:text-indigo-300 transition-colors block truncate max-w-[160px]"
+                          className="font-mono text-indigo-600 hover:text-indigo-500 transition-colors block truncate max-w-[160px]"
                         >
                           {sessionId.slice(0, 18)}…
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-indigo-300/80 text-[11px] font-medium truncate max-w-[140px]">
-                        {session?.org_name ?? <span className="text-gray-700">—</span>}
+                      <td className="px-4 py-3 text-[11px] font-medium truncate max-w-[140px]">
+                        {session?.org_name
+                          ? <span className="text-indigo-600">{session.org_name}</span>
+                          : session?.org_id
+                          ? <span className="text-gray-400 font-mono">{session.org_id}</span>
+                          : <span className="text-gray-300">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-gray-300 leading-relaxed">
+                      <td className="px-4 py-3 text-gray-700 leading-relaxed">
                         {annotation.text}
                       </td>
                       <td className="px-4 py-3 text-gray-500 text-[11px]">
@@ -195,31 +194,31 @@ export default function AnnotationsTab() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {session && session.escalation_count > 0 && (
-                            <span className="text-[10px] bg-amber-900/60 text-amber-300 border border-amber-800/50 px-1.5 py-0.5 rounded-full">
+                            <span className="text-[10px] bg-amber-100 text-amber-700 border border-amber-300 px-1.5 py-0.5 rounded-full">
                               🎧 {session.escalation_count}
                             </span>
                           )}
                           {session && session.thumbs_down_count > 0 && (
-                            <span className="text-[10px] bg-red-900/60 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-full">
+                            <span className="text-[10px] bg-red-100 text-red-600 border border-red-300 px-1.5 py-0.5 rounded-full">
                               👎 {session.thumbs_down_count}
                             </span>
                           )}
                           {session && session.thumbs_up_count > 0 && (
-                            <span className="text-[10px] bg-green-900/60 text-green-300 border border-green-800/50 px-1.5 py-0.5 rounded-full">
+                            <span className="text-[10px] bg-green-100 text-green-600 border border-green-300 px-1.5 py-0.5 rounded-full">
                               👍 {session.thumbs_up_count}
                             </span>
                           )}
                           {session?.has_session_feedback && (
-                            <span className="text-[10px] bg-blue-900/60 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-full">
+                            <span className="text-[10px] bg-blue-100 text-blue-600 border border-blue-300 px-1.5 py-0.5 rounded-full">
                               💬
                             </span>
                           )}
                           {session && !session.thumbs_down_count && !session.thumbs_up_count && !session.has_session_feedback && (
-                            <span className="text-gray-700 text-[11px]">—</span>
+                            <span className="text-gray-300 text-[11px]">—</span>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 text-[11px] font-mono whitespace-nowrap">
+                      <td className="px-4 py-3 text-gray-400 text-[11px] font-mono whitespace-nowrap">
                         {formatTs(annotation.updated_at)}
                       </td>
                     </tr>
@@ -233,9 +232,9 @@ export default function AnnotationsTab() {
         {/* Section 2 — Message annotations */}
         <section>
           <div className="flex items-center justify-between mb-3 gap-4 flex-wrap">
-            <h2 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               Message annotations
-              <span className="text-[11px] font-normal text-gray-600 bg-gray-800 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                 {messageAnnotations.length}
               </span>
             </h2>
@@ -260,9 +259,9 @@ export default function AnnotationsTab() {
                   if (e.key === 'Escape') setS2Search('')
                 }}
                 placeholder="Filter message annotations…"
-                className="text-xs bg-gray-900 border border-gray-700 rounded px-2.5 py-1.5 w-56
-                           text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500
-                           focus:ring-1 focus:ring-indigo-500/50 transition-colors"
+                className="text-xs bg-white border border-gray-300 rounded px-2.5 py-1.5 w-56
+                           text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-400
+                           focus:ring-1 focus:ring-indigo-400/30 transition-colors"
               />
             </div>
           </div>
@@ -272,9 +271,9 @@ export default function AnnotationsTab() {
           ) : filteredS2.length === 0 ? (
             <EmptyState message="No annotations match the search." />
           ) : (
-            <div className="border border-gray-800 rounded-xl overflow-hidden">
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
               <table className="w-full text-xs border-collapse">
-                <thead className="bg-gray-900/60 border-b border-gray-800">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-500 w-44">Session</th>
                     <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-500 w-32">Organization</th>
@@ -285,25 +284,29 @@ export default function AnnotationsTab() {
                     <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-500 w-36">Last updated</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800/60">
+                <tbody className="divide-y divide-gray-100">
                   {filteredS2.map(({ sessionId, eventId, annotation, session, message }) => (
-                    <tr key={`${sessionId}:${eventId}`} className="hover:bg-gray-900/40 transition-colors">
+                    <tr key={`${sessionId}:${eventId}`} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
                         <button
                           onClick={() => goToSession(sessionId, eventId)}
                           title={sessionId}
-                          className="font-mono text-indigo-400 hover:text-indigo-300 transition-colors block truncate max-w-[140px]"
+                          className="font-mono text-indigo-600 hover:text-indigo-500 transition-colors block truncate max-w-[140px]"
                         >
                           {sessionId.slice(0, 14)}…
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-indigo-300/80 text-[11px] font-medium truncate max-w-[120px]">
-                        {session?.org_name ?? <span className="text-gray-700">—</span>}
+                      <td className="px-4 py-3 text-[11px] font-medium truncate max-w-[120px]">
+                        {session?.org_name
+                          ? <span className="text-indigo-600">{session.org_name}</span>
+                          : session?.org_id
+                          ? <span className="text-gray-400 font-mono">{session.org_id}</span>
+                          : <span className="text-gray-300">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-gray-400">
+                      <td className="px-4 py-3 text-gray-500">
                         {message?.speaker ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 max-w-[200px]">
+                      <td className="px-4 py-3 text-gray-400 max-w-[200px]">
                         <span className="line-clamp-2 leading-snug">
                           {message ? message.message_text.slice(0, 80) : '—'}
                         </span>
@@ -315,10 +318,10 @@ export default function AnnotationsTab() {
                           ? '👍'
                           : '—'}
                       </td>
-                      <td className="px-4 py-3 text-gray-300 leading-relaxed">
+                      <td className="px-4 py-3 text-gray-700 leading-relaxed">
                         {annotation.text}
                       </td>
-                      <td className="px-4 py-3 text-gray-600 text-[11px] font-mono whitespace-nowrap">
+                      <td className="px-4 py-3 text-gray-400 text-[11px] font-mono whitespace-nowrap">
                         {formatTs(annotation.updated_at)}
                       </td>
                     </tr>

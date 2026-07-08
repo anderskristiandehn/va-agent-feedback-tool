@@ -30,18 +30,18 @@ export default function MultiSelect({ options, selected, onChange, label }: Prop
         onClick={() => setOpen(!open)}
         className={`text-xs px-2.5 py-1.5 rounded border transition-colors ${
           selected.length > 0
-            ? 'bg-indigo-900/40 border-indigo-700 text-indigo-300'
-            : 'bg-gray-900 border-gray-700 text-gray-300 hover:border-gray-500'
+            ? 'bg-indigo-50 border-indigo-300 text-indigo-600'
+            : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
         }`}
       >
         {btnLabel} ▾
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 min-w-[160px] py-1">
+        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[160px] py-1">
           {options.map((opt) => (
             <label
               key={opt.value}
-              className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-800 cursor-pointer text-xs text-gray-300"
+              className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer text-xs text-gray-700"
             >
               <input
                 type="checkbox"
@@ -55,7 +55,7 @@ export default function MultiSelect({ options, selected, onChange, label }: Prop
           {selected.length > 0 && (
             <button
               onClick={() => onChange([])}
-              className="w-full px-3 py-1.5 text-left text-xs text-indigo-400 hover:text-indigo-300 border-t border-gray-800 mt-1 pt-1.5"
+              className="w-full px-3 py-1.5 text-left text-xs text-indigo-600 hover:text-indigo-500 border-t border-gray-100 mt-1 pt-1.5"
             >
               Clear
             </button>

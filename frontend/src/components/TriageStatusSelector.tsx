@@ -10,19 +10,19 @@ interface StatusConfig {
 export const STATUS_CONFIG: Record<TriageStatus, StatusConfig> = {
   unreviewed: {
     label: 'Unreviewed',
-    activeClasses: 'bg-zinc-800 border-zinc-500 text-zinc-300',
+    activeClasses: 'bg-gray-200 border-gray-400 text-gray-600',
   },
   noted: {
     label: 'Noted',
-    activeClasses: 'bg-blue-900/60 border-blue-500 text-blue-300',
+    activeClasses: 'bg-blue-100 border-blue-400 text-blue-700',
   },
   actionable: {
     label: 'Actionable',
-    activeClasses: 'bg-amber-900/60 border-amber-500 text-amber-300',
+    activeClasses: 'bg-amber-100 border-amber-400 text-amber-700',
   },
   dismissed: {
     label: 'Dismissed',
-    activeClasses: 'bg-gray-900 border-gray-600 text-gray-500',
+    activeClasses: 'bg-gray-100 border-gray-400 text-gray-500',
   },
 }
 
@@ -79,7 +79,7 @@ export default function TriageStatusSelector({ status: initialStatus, sessionId,
               ${!isFirst ? '-ml-px' : ''}
               ${isActive
                 ? cfg.activeClasses + ' font-medium z-10 relative'
-                : 'bg-transparent border-gray-700 text-gray-600 hover:text-gray-400 hover:border-gray-600 hover:z-10 hover:relative'
+                : 'bg-white border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 hover:z-10 hover:relative'
               }
               ${s === 'dismissed' && isActive ? 'line-through' : ''}
             `}
