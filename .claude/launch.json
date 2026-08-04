@@ -4,19 +4,19 @@
     {
       "name": "invoices-chart",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "7890", "--directory", "C:/Users/AndersDehn/cloude/feedback_tool"],
+      "runtimeArgs": ["-m", "http.server", "7890", "--directory", "C:/Users/AndersDehn/Claude/feedback_tool"],
       "port": 7890
     },
     {
       "name": "backend",
       "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "cd /d C:\\Users\\AndersDehn\\cloude\\feedback_tool\\backend && .venv\\Scripts\\uvicorn main:app --reload --port 8000"],
+      "runtimeArgs": ["/c", "cd /d C:\\Users\\AndersDehn\\Claude\\feedback_tool\\backend && .venv\\Scripts\\python.exe -m uvicorn main:app --reload --port 8000"],
       "port": 8000
     },
     {
       "name": "frontend",
       "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "cd /d C:\\Users\\AndersDehn\\cloude\\feedback_tool\\frontend && npm run dev"],
+      "runtimeArgs": ["/c", "cd /d C:\\Users\\AndersDehn\\Claude\\feedback_tool\\frontend && npm run dev"],
       "port": 3000
     }
   ]
