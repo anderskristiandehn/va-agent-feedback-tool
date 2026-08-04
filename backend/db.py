@@ -537,6 +537,16 @@ def fetch_feedback() -> list[dict]:
 # GET /api/meta  (unchanged)
 # ---------------------------------------------------------------------------
 
+def fetch_all_user_ids() -> list[str]:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT DISTINCT user_id FROM public.events WHERE user_id IS NOT NULL")
+            return [r[0] for r in cur.fetchall()]
+    finally:
+        conn.close()
+
+
 def fetch_meta() -> dict:
     conn = get_connection()
     try:
@@ -572,13 +582,7 @@ def fetch_meta() -> dict:
     finally:
         conn.close()
 
-    conn2 = get_connection()
-    try:
-        with conn2.cursor() as cur:
-            cur.execute("SELECT DISTINCT user_id FROM public.events WHERE user_id IS NOT NULL")
-            user_ids = [r[0] for r in cur.fetchall()]
-    finally:
-        conn2.close()
+    user_ids = fetch_all_user_ids()
 
     try:
         org_lookup = billy_db.get_org_lookup(user_ids)
