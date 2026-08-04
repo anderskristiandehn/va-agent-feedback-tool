@@ -14,5 +14,15 @@
         "updated_at": "2026-07-08T10:19:11.775479+00:00"
       }
     }
+  },
+  "staging": {
+    "sessions": {},
+    "messages": {
+      "b01db213-bf78-4ebe-b5c9-38ef17cee19a:kzuZLQej": {
+        "text": "We need to do xyz. Linear id",
+        "status": "actionable",
+        "updated_at": "2026-08-04T22:11:54.718474+00:00"
+      }
+    }
   }
 }
