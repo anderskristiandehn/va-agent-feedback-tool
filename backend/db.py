@@ -524,6 +524,7 @@ def fetch_feedback() -> list[dict]:
             "timestamp": _ts(row["timestamp"]),
             "speaker": row["speaker"],
             "app_name": row["app_name"],
+            "org_id": org_lookup.get(user_id_map.get(row["session_id"], ""), {}).get("org_id"),
             "org_name": org_lookup.get(user_id_map.get(row["session_id"], ""), {}).get("org_name"),
             "category": row["category"],
             "details": row["details"],
@@ -592,5 +593,20 @@ def fetch_meta() -> dict:
         {org_lookup[uid]["org_name"] for uid in user_ids if uid in org_lookup},
         key=str.lower,
     )
+    orgs_by_id = {
+        org_lookup[uid]["org_id"]: org_lookup[uid]["org_name"]
+        for uid in user_ids
+        if uid in org_lookup
+    }
+    orgs = sorted(
+        ({"org_id": oid, "org_name": name} for oid, name in orgs_by_id.items()),
+        key=lambda o: o["org_name"].lower(),
+    )
 
-    return {"app_names": app_names, "locales": locales, "categories": categories, "org_names": org_names}
+    return {
+        "app_names": app_names,
+        "locales": locales,
+        "categories": categories,
+        "org_names": org_names,
+        "orgs": orgs,
+    }

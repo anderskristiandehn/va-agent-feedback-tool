@@ -77,7 +77,7 @@ export default function SessionList({
         if (!matchId && !matchUser && !matchOrg) return false
       }
 
-      if (orgFilter && s.org_name !== orgFilter) return false
+      if (orgFilter && s.org_id !== orgFilter) return false
 
       if (feedbackFilter === 'thumbs_down' && s.thumbs_down_count === 0) return false
       if (feedbackFilter === 'thumbs_up' && s.thumbs_up_count === 0) return false
@@ -267,10 +267,7 @@ export default function SessionList({
             onChange={(v) => setFilter('orgFilter', v)}
             options={[
               { value: '', label: 'All organizations' },
-              ...meta.org_names.map((o) => {
-                const orgId = sessions.find((s) => s.org_name === o)?.org_id
-                return { value: o, label: orgId ? `${o} (${orgId})` : o }
-              }),
+              ...meta.orgs.map((o) => ({ value: o.org_id, label: `${o.org_name} (${o.org_id})` })),
             ]}
             className="flex-1"
           />

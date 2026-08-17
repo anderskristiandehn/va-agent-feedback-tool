@@ -74,9 +74,15 @@ export default function OrgsTab() {
     const map = new Map<string, OrgRow>()
 
     for (const s of sessions) {
+      // Group by org_id so two orgs that happen to share a display name
+      // stay separate. Unresolved sessions (org_name null) still collapse
+      // into one "(unknown)" bucket — their org_id is just the raw,
+      // unmatched user_id (see db.py _build_sessions), not a real org id,
+      // so it can't be used to distinguish them.
       const name = s.org_name ?? '(unknown)'
-      if (!map.has(name)) {
-        map.set(name, {
+      const key = s.org_name ? s.org_id ?? '(unknown)' : '(unknown)'
+      if (!map.has(key)) {
+        map.set(key, {
           org_id: s.org_id,
           org_name: name,
           org_country: s.org_country,
@@ -91,7 +97,7 @@ export default function OrgsTab() {
           comments: 0,
         })
       }
-      const row = map.get(name)!
+      const row = map.get(key)!
       row.sessions += 1
       row.avg_msgs += s.message_count
       row.thumbs_up += s.thumbs_up_count
@@ -132,9 +138,9 @@ export default function OrgsTab() {
     return s
   }, [filtered, sort])
 
-  const goToSessions = (orgName: string) => {
-    if (orgName === '(unknown)') return
-    setFilter('orgFilter', orgName)
+  const goToSessions = (org: OrgRow) => {
+    if (org.org_name === '(unknown)' || !org.org_id) return
+    setFilter('orgFilter', org.org_id)
     setSearchParams({ tab: 'sessions' })
   }
 
@@ -194,10 +200,10 @@ export default function OrgsTab() {
                     </tr>
                   ))
                 : sorted.map((org) => (
-                    <tr key={org.org_name} className="hover:bg-gray-50 transition-colors">
+                    <tr key={org.org_id ?? org.org_name} className="hover:bg-gray-50 transition-colors">
                       <td className="px-3 py-2.5">
                         <button
-                          onClick={() => goToSessions(org.org_name)}
+                          onClick={() => goToSessions(org)}
                           disabled={org.org_name === '(unknown)'}
                           className="text-indigo-600 hover:text-indigo-500 transition-colors font-medium text-left disabled:text-gray-400 disabled:cursor-default"
                         >

@@ -74,10 +74,16 @@ export interface FeedbackEntry {
   timestamp: string | null
   speaker: string | null
   app_name: string | null
+  org_id: string | null
   org_name: string | null
   category: string | null
   details: string | null
   message_preview: string | null
+}
+
+export interface OrgMeta {
+  org_id: string
+  org_name: string
 }
 
 export interface MetaData {
@@ -85,4 +91,5 @@ export interface MetaData {
   locales: string[]
   categories: string[]
   org_names: string[]
+  orgs: OrgMeta[]
 }

@@ -166,9 +166,10 @@ export default function AllFeedbackTab({ annotations }: Props) {
   const ann = annotations
 
   const allOrgs = useMemo(() => {
-    const orgs = new Set<string>()
-    feedbackData?.forEach((e) => { if (e.org_name) orgs.add(e.org_name) })
-    return Array.from(orgs).sort()
+    const orgs = new Map<string, string>()
+    feedbackData?.forEach((e) => { if (e.org_id && e.org_name) orgs.set(e.org_id, e.org_name) })
+    return Array.from(orgs, ([org_id, org_name]) => ({ org_id, org_name }))
+      .sort((a, b) => a.org_name.localeCompare(b.org_name))
   }, [feedbackData])
 
   const [rawSearch, setRawSearch] = useState('')
@@ -210,7 +211,7 @@ export default function AllFeedbackTab({ annotations }: Props) {
         return false
 
       if (appFilter && e.app_name !== appFilter) return false
-      if (orgFilter && e.org_name !== orgFilter) return false
+      if (orgFilter && e.org_id !== orgFilter) return false
 
       if (dateFrom) {
         if (!e.timestamp || new Date(e.timestamp) < new Date(dateFrom)) return false
@@ -242,7 +243,7 @@ export default function AllFeedbackTab({ annotations }: Props) {
 
       return true
     })
-  }, [feedbackData, typeFilter, selectedCategories, appFilter, dateFrom, dateTo, annFilter, statusFilter, debouncedSearch, ann])
+  }, [feedbackData, typeFilter, selectedCategories, appFilter, orgFilter, dateFrom, dateTo, annFilter, statusFilter, debouncedSearch, ann])
 
   const sorted = useMemo(() => {
     const s = [...filtered]
@@ -373,7 +374,7 @@ export default function AllFeedbackTab({ annotations }: Props) {
           >
             <option value="">All organizations</option>
             {allOrgs.map((o) => (
-              <option key={o} value={o}>{o}</option>
+              <option key={o.org_id} value={o.org_id}>{o.org_name} ({o.org_id})</option>
             ))}
           </select>
 

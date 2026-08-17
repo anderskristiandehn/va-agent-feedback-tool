@@ -167,7 +167,7 @@ export default function App() {
                 isError={isError}
                 isFetching={isFetchingSessions}
                 onRefresh={refetchSessions}
-                meta={meta ?? { app_names: [], locales: [], categories: [], org_names: [] }}
+                meta={meta ?? { app_names: [], locales: [], categories: [], org_names: [], orgs: [] }}
                 selectedSessionId={selectedSessionId}
                 onSelect={handleSelectSession}
               />
