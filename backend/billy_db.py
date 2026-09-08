@@ -17,6 +17,7 @@ def _cfg(key: str) -> str:
 _org_cache: dict[str, dict] | None = None
 _cache_env: str | None = None  # which env the cache was built for
 _last_org_ids: list[str] = []  # remembered so refresh_cache() can reuse it
+_unresolved_ids: set[str] = set()  # ids already looked up with no matching org
 
 # public.events.user_id sometimes holds Billy's Organization.globalId (a UUID)
 # instead of Organization.id (a short base64-like string) — e.g. for
@@ -49,16 +50,15 @@ def _row_to_org(row: dict) -> dict:
         "org_plan": row["subscriptionPlan"],
         "org_is_trial": row["isTrial"] == "1",
         "org_is_terminated": row["isTerminated"] == "1",
+        "org_is_test": row["isTest"] == "1",
         "org_created": row["createdTime"].isoformat() if row["createdTime"] else None,
     }
 
 
-def load_org_lookup(org_ids: list[str]) -> dict[str, dict]:
-    global _org_cache, _cache_env
+def _fetch_orgs(org_ids: list[str]) -> dict[str, dict]:
+    """Look up a batch of org ids/globalIds against Billy. No cache side effects."""
     if not org_ids:
-        _org_cache = {}
-        _cache_env = os.getenv("ENV", "staging")
-        return _org_cache
+        return {}
 
     plain_ids = [i for i in org_ids if not _UUID_RE.match(i)]
     global_ids = [i for i in org_ids if _UUID_RE.match(i)]
@@ -71,7 +71,7 @@ def load_org_lookup(org_ids: list[str]) -> dict[str, dict]:
                 placeholders = ",".join(["%s"] * len(plain_ids))
                 cur.execute(
                     f"""
-                    SELECT id, name, url, countryId, subscriptionPlan, isTrial, isTerminated, createdTime
+                    SELECT id, name, url, countryId, subscriptionPlan, isTrial, isTerminated, isTest, createdTime
                     FROM Organization
                     WHERE id IN ({placeholders})
                     """,
@@ -84,7 +84,7 @@ def load_org_lookup(org_ids: list[str]) -> dict[str, dict]:
                 placeholders = ",".join(["UUID_TO_BIN(%s)"] * len(global_ids))
                 cur.execute(
                     f"""
-                    SELECT id, globalId, name, url, countryId, subscriptionPlan, isTrial, isTerminated, createdTime
+                    SELECT id, globalId, name, url, countryId, subscriptionPlan, isTrial, isTerminated, isTest, createdTime
                     FROM Organization
                     WHERE globalId IN ({placeholders})
                     """,
@@ -96,22 +96,44 @@ def load_org_lookup(org_ids: list[str]) -> dict[str, dict]:
     finally:
         conn.close()
 
-    _org_cache = result
+    return result
+
+
+def load_org_lookup(org_ids: list[str]) -> dict[str, dict]:
+    global _org_cache, _cache_env, _unresolved_ids
+    _org_cache = _fetch_orgs(org_ids)
     _cache_env = os.getenv("ENV", "staging")
+    _unresolved_ids = set(org_ids) - set(_org_cache)
     return _org_cache
 
 
 def get_org_lookup(org_ids: list[str]) -> dict[str, dict]:
-    global _org_cache, _cache_env, _last_org_ids
+    global _org_cache, _cache_env, _last_org_ids, _unresolved_ids
     _last_org_ids = org_ids
     current_env = os.getenv("ENV", "staging")
-    # Rebuild if never loaded or env switched
+
+    # Rebuild from scratch if never loaded or env switched
     if _org_cache is None or _cache_env != current_env:
         try:
             load_org_lookup(org_ids)
         except Exception:
             _org_cache = {}
             _cache_env = current_env
+            _unresolved_ids = set()
+        return _org_cache
+
+    # Cache exists for this env — resolve any ids we haven't seen before yet
+    # (newly-created orgs, or orgs whose first session just arrived) instead
+    # of forcing a full manual refresh to pick them up.
+    missing = [i for i in org_ids if i not in _org_cache and i not in _unresolved_ids]
+    if missing:
+        try:
+            fetched = _fetch_orgs(missing)
+            _org_cache.update(fetched)
+            _unresolved_ids |= set(missing) - set(fetched)
+        except Exception:
+            pass  # Billy unreachable — keep serving the existing cache
+
     return _org_cache
 
 

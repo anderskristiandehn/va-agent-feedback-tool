@@ -455,6 +455,7 @@ def _build_sessions(
                 "org_country": org["org_country"] if org else None,
                 "org_plan": org["org_plan"] if org else None,
                 "org_is_trial": org["org_is_trial"] if org else None,
+                "org_is_test": org["org_is_test"] if org else None,
                 "org_created": org["org_created"] if org else None,
                 "first_timestamp": _ts(first_ts),
                 "last_timestamp": _ts(last_ts),
@@ -526,6 +527,7 @@ def fetch_feedback() -> list[dict]:
             "app_name": row["app_name"],
             "org_id": org_lookup.get(user_id_map.get(row["session_id"], ""), {}).get("org_id"),
             "org_name": org_lookup.get(user_id_map.get(row["session_id"], ""), {}).get("org_name"),
+            "org_is_test": org_lookup.get(user_id_map.get(row["session_id"], ""), {}).get("org_is_test"),
             "category": row["category"],
             "details": row["details"],
             "message_preview": row["message_preview"],
@@ -594,12 +596,15 @@ def fetch_meta() -> dict:
         key=str.lower,
     )
     orgs_by_id = {
-        org_lookup[uid]["org_id"]: org_lookup[uid]["org_name"]
+        org_lookup[uid]["org_id"]: org_lookup[uid]
         for uid in user_ids
         if uid in org_lookup
     }
     orgs = sorted(
-        ({"org_id": oid, "org_name": name} for oid, name in orgs_by_id.items()),
+        (
+            {"org_id": oid, "org_name": org["org_name"], "org_is_test": org["org_is_test"]}
+            for oid, org in orgs_by_id.items()
+        ),
         key=lambda o: o["org_name"].lower(),
     )
 
