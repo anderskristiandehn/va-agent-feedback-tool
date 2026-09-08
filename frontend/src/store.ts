@@ -46,12 +46,14 @@ interface AppState {
   filters: FilterState
   threadSearch: string
   darkMode: boolean
+  hideTestOrgs: boolean
 
   setSelectedSession: (id: string | null) => void
   setFilter: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void
   clearFilters: () => void
   setThreadSearch: (search: string) => void
   toggleDarkMode: () => void
+  toggleHideTestOrgs: () => void
 }
 
 const getInitialDarkMode = (): boolean => {
@@ -59,11 +61,18 @@ const getInitialDarkMode = (): boolean => {
   return stored === 'true'
 }
 
+// Defaults to hiding test orgs — they're noise in a feedback review tool.
+const getInitialHideTestOrgs = (): boolean => {
+  const stored = localStorage.getItem('hideTestOrgs')
+  return stored === null ? true : stored === 'true'
+}
+
 export const useStore = create<AppState>((set) => ({
   selectedSessionId: null,
   filters: { ...DEFAULT_FILTERS },
   threadSearch: '',
   darkMode: getInitialDarkMode(),
+  hideTestOrgs: getInitialHideTestOrgs(),
 
   setSelectedSession: (id) => set({ selectedSessionId: id }),
 
@@ -84,5 +93,12 @@ export const useStore = create<AppState>((set) => ({
         document.documentElement.classList.remove('dark')
       }
       return { darkMode: next }
+    }),
+
+  toggleHideTestOrgs: () =>
+    set((state) => {
+      const next = !state.hideTestOrgs
+      localStorage.setItem('hideTestOrgs', String(next))
+      return { hideTestOrgs: next }
     }),
 }))

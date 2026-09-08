@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useDebounce } from '../hooks/useDebounce'
 import { useStore, type FeedbackFilter, type EscalationFilter, type SortOrder } from '../store'
 import type { Annotations, MetaData, SessionData, TriageStatus } from '../types'
+import { downloadSessionsHtml } from '../utils/exportSessionHtml'
 import MultiSelect from './MultiSelect'
 
 interface Props {
@@ -47,7 +48,7 @@ export default function SessionList({
   onSelect,
 }: Props) {
   const [, setSearchParams] = useSearchParams()
-  const { filters, setFilter, clearFilters } = useStore()
+  const { filters, setFilter, clearFilters, hideTestOrgs } = useStore()
   const searchRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -70,6 +71,8 @@ export default function SessionList({
     const toMs = dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null
 
     const filtered = sessions.filter((s) => {
+      if (hideTestOrgs && s.org_is_test) return false
+
       if (term) {
         const matchId = s.session_id.toLowerCase().includes(term)
         const matchUser = s.user_id?.toLowerCase().includes(term)
@@ -131,7 +134,7 @@ export default function SessionList({
     })
 
     return filtered
-  }, [sessions, filters, annotations, debouncedSearch])
+  }, [sessions, filters, annotations, debouncedSearch, hideTestOrgs])
 
   const hasActiveFilters =
     debouncedSearch ||
@@ -267,7 +270,9 @@ export default function SessionList({
             onChange={(v) => setFilter('orgFilter', v)}
             options={[
               { value: '', label: 'All organizations' },
-              ...meta.orgs.map((o) => ({ value: o.org_id, label: `${o.org_name} (${o.org_id})` })),
+              ...meta.orgs
+                .filter((o) => !hideTestOrgs || !o.org_is_test)
+                .map((o) => ({ value: o.org_id, label: `${o.org_name} (${o.org_id})` })),
             ]}
             className="flex-1"
           />
@@ -356,6 +361,16 @@ export default function SessionList({
               </button>
             )}
             <button
+              onClick={() => downloadSessionsHtml(filteredSessions, annotations)}
+              disabled={filteredSessions.length === 0}
+              title="Download all filtered sessions as a shareable HTML file"
+              className="text-[11px] px-2 py-0.5 rounded border border-gray-300 bg-white
+                         text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors
+                         disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              ⬇ Download all
+            </button>
+            <button
               onClick={() => onRefresh()}
               disabled={isFetching}
               title="Refresh sessions"
@@ -415,6 +430,11 @@ export default function SessionList({
                     {session.org_country && (
                       <span className="ml-1.5 text-[10px] font-normal text-gray-400">
                         {session.org_country}
+                      </span>
+                    )}
+                    {session.org_is_test && (
+                      <span className="ml-1 text-[10px] font-normal text-purple-600 bg-purple-50 border border-purple-200 px-1 py-0.5 rounded">
+                        test
                       </span>
                     )}
                     {session.org_is_trial && (

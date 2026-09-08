@@ -61,7 +61,7 @@ function SortTh({
 }
 
 export default function OrgsTab() {
-  const { setFilter } = useStore()
+  const { setFilter, hideTestOrgs } = useStore()
   const [, setSearchParams] = useSearchParams()
   const [sort, setSort] = useState<{ col: SortCol; dir: SortDir }>({ col: 'sessions', dir: 'desc' })
   const [search, setSearch] = useState('')
@@ -74,6 +74,8 @@ export default function OrgsTab() {
     const map = new Map<string, OrgRow>()
 
     for (const s of sessions) {
+      if (hideTestOrgs && s.org_is_test) continue
+
       // Group by org_id so two orgs that happen to share a display name
       // stay separate. Unresolved sessions (org_name null) still collapse
       // into one "(unknown)" bucket — their org_id is just the raw,
@@ -113,7 +115,7 @@ export default function OrgsTab() {
     }
 
     return Array.from(map.values())
-  }, [sessions])
+  }, [sessions, hideTestOrgs])
 
   const filtered = useMemo(() => {
     const lower = search.toLowerCase()

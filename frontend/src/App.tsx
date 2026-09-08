@@ -33,7 +33,14 @@ const TABS: { id: Tab; label: string; key: string }[] = [
 
 export default function App() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const { selectedSessionId, setSelectedSession, darkMode, toggleDarkMode } = useStore()
+  const {
+    selectedSessionId,
+    setSelectedSession,
+    darkMode,
+    toggleDarkMode,
+    hideTestOrgs,
+    toggleHideTestOrgs,
+  } = useStore()
   const queryClient = useQueryClient()
   const [switching, setSwitching] = useState(false)
 
@@ -145,6 +152,17 @@ export default function App() {
         {/* Global search */}
         <div className="ml-2 flex-1 flex justify-end items-center gap-4">
           <GlobalSearch />
+          <button
+            onClick={toggleHideTestOrgs}
+            title={hideTestOrgs ? 'Test orgs are hidden — click to show them' : 'Test orgs are shown — click to hide them'}
+            className={`text-[11px] px-2.5 py-1 rounded border transition-colors flex-none ${
+              hideTestOrgs
+                ? 'bg-indigo-50 border-indigo-300 text-indigo-600'
+                : 'bg-white border-gray-300 text-gray-500 hover:text-gray-700 hover:border-gray-400'
+            }`}
+          >
+            {hideTestOrgs ? '🧪 Test orgs hidden' : '🧪 Test orgs shown'}
+          </button>
           <button
             onClick={toggleDarkMode}
             title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}

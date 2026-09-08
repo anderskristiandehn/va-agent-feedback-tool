@@ -156,7 +156,7 @@ interface Props {
 
 export default function AllFeedbackTab({ annotations }: Props) {
   const [, setSearchParams] = useSearchParams()
-  const { setSelectedSession } = useStore()
+  const { setSelectedSession, hideTestOrgs } = useStore()
 
   const { data: feedbackData, isLoading, isError } = useQuery({
     queryKey: ['feedback'],
@@ -167,10 +167,13 @@ export default function AllFeedbackTab({ annotations }: Props) {
 
   const allOrgs = useMemo(() => {
     const orgs = new Map<string, string>()
-    feedbackData?.forEach((e) => { if (e.org_id && e.org_name) orgs.set(e.org_id, e.org_name) })
+    feedbackData?.forEach((e) => {
+      if (hideTestOrgs && e.org_is_test) return
+      if (e.org_id && e.org_name) orgs.set(e.org_id, e.org_name)
+    })
     return Array.from(orgs, ([org_id, org_name]) => ({ org_id, org_name }))
       .sort((a, b) => a.org_name.localeCompare(b.org_name))
-  }, [feedbackData])
+  }, [feedbackData, hideTestOrgs])
 
   const [rawSearch, setRawSearch] = useState('')
   const debouncedSearch = useDebounce(rawSearch, 200)
@@ -203,6 +206,8 @@ export default function AllFeedbackTab({ annotations }: Props) {
   const filtered = useMemo(() => {
     const lower = debouncedSearch.toLowerCase()
     return (feedbackData ?? []).filter((e) => {
+      if (hideTestOrgs && e.org_is_test) return false
+
       if (typeFilter === 'thumbs_down' && e.feedback_type !== 'thumbs_down') return false
       if (typeFilter === 'thumbs_up' && e.feedback_type !== 'thumbs_up') return false
       if (typeFilter === 'session' && e.type !== 'session') return false
@@ -243,7 +248,7 @@ export default function AllFeedbackTab({ annotations }: Props) {
 
       return true
     })
-  }, [feedbackData, typeFilter, selectedCategories, appFilter, orgFilter, dateFrom, dateTo, annFilter, statusFilter, debouncedSearch, ann])
+  }, [feedbackData, typeFilter, selectedCategories, appFilter, orgFilter, dateFrom, dateTo, annFilter, statusFilter, debouncedSearch, ann, hideTestOrgs])
 
   const sorted = useMemo(() => {
     const s = [...filtered]

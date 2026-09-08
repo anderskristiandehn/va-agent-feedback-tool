@@ -41,6 +41,7 @@ export interface SessionData {
   org_country: string | null
   org_plan: string | null
   org_is_trial: boolean | null
+  org_is_test: boolean | null
   org_created: string | null
   first_timestamp: string | null
   last_timestamp: string | null
@@ -76,6 +77,7 @@ export interface FeedbackEntry {
   app_name: string | null
   org_id: string | null
   org_name: string | null
+  org_is_test: boolean | null
   category: string | null
   details: string | null
   message_preview: string | null
@@ -84,6 +86,7 @@ export interface FeedbackEntry {
 export interface OrgMeta {
   org_id: string
   org_name: string
+  org_is_test: boolean | null
 }
 
 export interface MetaData {

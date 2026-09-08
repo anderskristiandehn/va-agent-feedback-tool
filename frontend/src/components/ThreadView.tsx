@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useDebounce } from '../hooks/useDebounce'
 import { useStore } from '../store'
 import type { Annotations, SessionData } from '../types'
+import { downloadSessionHtml } from '../utils/exportSessionHtml'
 import FeedbackBlock from './FeedbackBlock'
 import MessageBubble from './MessageBubble'
 import TriageStatusSelector from './TriageStatusSelector'
@@ -233,8 +234,18 @@ export default function ThreadView({ session, annotations }: Props) {
               )}
             </div>
           </div>
-          <div className="text-xs text-gray-500 text-right flex-shrink-0">
-            {formatFullRange(session.first_timestamp, session.last_timestamp)}
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+            <button
+              onClick={() => downloadSessionHtml(session, annotations)}
+              title="Download this session as a shareable HTML file"
+              className="text-[11px] px-2.5 py-1 rounded-md border border-gray-300 bg-white
+                         text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-colors whitespace-nowrap"
+            >
+              ⬇ Download
+            </button>
+            <div className="text-xs text-gray-500 text-right">
+              {formatFullRange(session.first_timestamp, session.last_timestamp)}
+            </div>
           </div>
         </div>
 
