@@ -26,6 +26,34 @@ _UUID_RE = re.compile(
     r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', re.I
 )
 
+# Billy's own isTest flag misses some obviously-internal orgs (e.g. accounts
+# created by staff for testing that were never flagged). Treat any org with
+# a member whose email is on one of these domains as a test org too.
+_STAFF_EMAIL_DOMAINS = ("ageras.com", "billy.dk", "shine.com")
+
+
+def _fetch_staff_org_ids(conn, internal_org_ids: list[str]) -> set[str]:
+    """Internal Organization.id values that have a staff-domain user attached."""
+    if not internal_org_ids:
+        return set()
+
+    id_placeholders = ",".join(["%s"] * len(internal_org_ids))
+    domain_conditions = " OR ".join(["u.email LIKE %s"] * len(_STAFF_EMAIL_DOMAINS))
+    params = list(internal_org_ids) + [f"%@{d}" for d in _STAFF_EMAIL_DOMAINS]
+
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT DISTINCT oua.organizationId
+            FROM OrganizationUserAccess oua
+            JOIN User u ON u.id = oua.userId
+            WHERE oua.organizationId IN ({id_placeholders})
+              AND ({domain_conditions})
+            """,
+            params,
+        )
+        return {row["organizationId"] for row in cur.fetchall()}
+
 
 def _get_connection():
     return pymysql.connect(
@@ -64,6 +92,7 @@ def _fetch_orgs(org_ids: list[str]) -> dict[str, dict]:
     global_ids = [i for i in org_ids if _UUID_RE.match(i)]
 
     result: dict[str, dict] = {}
+    internal_ids_by_key: dict[str, str] = {}  # result key -> Organization.id
     conn = _get_connection()
     try:
         with conn.cursor() as cur:
@@ -79,6 +108,7 @@ def _fetch_orgs(org_ids: list[str]) -> dict[str, dict]:
                 )
                 for row in cur.fetchall():
                     result[row["id"]] = _row_to_org(row)
+                    internal_ids_by_key[row["id"]] = row["id"]
 
             if global_ids:
                 placeholders = ",".join(["UUID_TO_BIN(%s)"] * len(global_ids))
@@ -93,6 +123,12 @@ def _fetch_orgs(org_ids: list[str]) -> dict[str, dict]:
                 for row in cur.fetchall():
                     key = str(uuid_mod.UUID(bytes=row["globalId"]))
                     result[key] = _row_to_org(row)
+                    internal_ids_by_key[key] = row["id"]
+
+        staff_org_ids = _fetch_staff_org_ids(conn, list(internal_ids_by_key.values()))
+        for key, internal_id in internal_ids_by_key.items():
+            if internal_id in staff_org_ids:
+                result[key]["org_is_test"] = True
     finally:
         conn.close()
 

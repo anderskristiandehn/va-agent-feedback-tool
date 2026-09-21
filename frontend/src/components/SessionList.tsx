@@ -136,6 +136,13 @@ export default function SessionList({
     return filtered
   }, [sessions, filters, annotations, debouncedSearch, hideTestOrgs])
 
+  // Shareable exports should never leak test-org sessions, regardless of
+  // whether the "show test orgs" toggle happens to be on.
+  const downloadableSessions = useMemo(
+    () => filteredSessions.filter((s) => !s.org_is_test),
+    [filteredSessions],
+  )
+
   const hasActiveFilters =
     debouncedSearch ||
     filters.feedbackFilter !== 'all' ||
@@ -361,9 +368,9 @@ export default function SessionList({
               </button>
             )}
             <button
-              onClick={() => downloadSessionsHtml(filteredSessions, annotations)}
-              disabled={filteredSessions.length === 0}
-              title="Download all filtered sessions as a shareable HTML file"
+              onClick={() => downloadSessionsHtml(downloadableSessions, annotations)}
+              disabled={downloadableSessions.length === 0}
+              title="Download all filtered sessions (excluding test orgs) as a shareable HTML file"
               className="text-[11px] px-2 py-0.5 rounded border border-gray-300 bg-white
                          text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors
                          disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
